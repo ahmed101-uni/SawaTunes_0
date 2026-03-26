@@ -1,4 +1,5 @@
 import {
+  NavLink,
   isRouteErrorResponse,
   Links,
   Meta,
@@ -6,8 +7,10 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { useEffect, useState } from "react";
 
 import type { Route } from "./+types/root";
+import { observeAdminAuth } from "~/lib/firebase.client";
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [
@@ -19,7 +22,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Tajawal:wght@400;500;700&display=swap",
   },
 ];
 
@@ -42,8 +45,81 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    try {
+      const unsubscribe = observeAdminAuth((user) => {
+        if (!mounted) {
+          return;
+        }
+
+        setIsAdminAuthenticated(Boolean(user));
+      });
+
+      return () => {
+        mounted = false;
+        unsubscribe();
+      };
+    } catch {
+      return () => {
+        mounted = false;
+      };
+    }
+  }, []);
+
+  const adminNavItem = isAdminAuthenticated
+    ? { to: "/admin", label: "Admin Dashboard" }
+    : { to: "/admin/login", label: "Admin Login" };
+
+  const navItems = [...baseNavItems, adminNavItem];
+
+  return (
+    <div className="app-shell">
+      <header className="site-header">
+        <div className="container shell-row">
+          <NavLink to="/" className="brand-block" aria-label="SawaTunes home">
+            <span className="brand-mark">SawaTunes</span>
+            <span className="brand-sub">Sudanese music and culture</span>
+          </NavLink>
+          <nav className="site-nav" aria-label="Primary navigation">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  isActive ? "nav-link nav-link-active" : "nav-link"
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
+      </header>
+      <main className="container main-content">
+        <Outlet />
+      </main>
+      <footer className="site-footer">
+        <div className="container">
+          <p>
+            SawaTunes is a cultural discovery platform for Sudanese artists and
+            communities.
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
 }
+
+const baseNavItems = [
+  { to: "/", label: "Home" },
+  { to: "/songs", label: "Songs" },
+  { to: "/artists", label: "Artists" },
+  { to: "/charity", label: "Charity Awareness" },
+];
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!";
@@ -62,11 +138,11 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
+    <main className="error-panel">
       <h1>{message}</h1>
       <p>{details}</p>
       {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
+        <pre>
           <code>{stack}</code>
         </pre>
       )}
