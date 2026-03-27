@@ -63,6 +63,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 1rem;
   padding: 0.8rem 0;
 }
@@ -88,7 +89,7 @@ a {
 .site-nav {
   display: flex;
   align-items: center;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 0.4rem;
   overflow-x: auto;
   scrollbar-width: thin;
@@ -109,7 +110,7 @@ a {
   font-size: 0.93rem;
   transition: all 140ms ease;
   text-align: center;
-  padding-top: 10px;
+  padding-top: 0.42rem;
 }
 
 .nav-link:hover {
@@ -274,6 +275,7 @@ p {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 0.65rem;
 }
 
@@ -389,6 +391,7 @@ p {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.6rem;
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-md);
@@ -398,6 +401,50 @@ p {
 
 .micro-text {
   font-size: 0.82rem;
+}
+
+@media (max-width: 759px) {
+  .container {
+    width: min(1100px, calc(100% - 1.25rem));
+  }
+
+  .brand-sub {
+    font-size: 0.72rem;
+  }
+
+  .site-nav {
+    width: 100%;
+    padding-bottom: 0.15rem;
+  }
+
+  .nav-link {
+    font-size: 0.86rem;
+    min-height: 1.9rem;
+    padding: 0.4rem 0.66rem;
+  }
+
+  .button-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .song-card .button-row {
+    grid-template-columns: 1fr;
+  }
+
+  .card-head h2,
+  .stack-item strong {
+    overflow-wrap: anywhere;
+  }
+
+  .stack-item .btn {
+    width: 100%;
+  }
 }
 
 .site-footer {
@@ -431,6 +478,22 @@ p {
 }
 
 @media (min-width: 760px) {
+  .shell-row {
+    flex-wrap: nowrap;
+  }
+
+  .site-nav {
+    flex-wrap: nowrap;
+  }
+
+  .button-row .btn {
+    width: auto;
+  }
+
+  .stack-item .btn {
+    width: auto;
+  }
+
   .main-content {
     padding-top: 1.9rem;
   }
