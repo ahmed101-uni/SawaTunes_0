@@ -1,87 +1,149 @@
-# Welcome to React Router!
+# SawaTunes
 
-A modern, production-ready template for building full-stack React applications using React Router.
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+SawaTunes is a small web app for discovering Sudanese music and artists. The public site is browse-only (no user accounts). A restricted admin area is used to curate artist profiles and song entries.
 
 ## Features
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- Public browsing of artists and songs
+- Songs open on YouTube (external playback)
+- Admin-only dashboard to create/delete artists and songs
+- Simple engagement counters (likes and views)
+	- Likes: limited to one per song per browser (localStorage)
+	- Views: limited to one per song per browser (localStorage)
 
-## Getting Started
+## Tech Stack
 
-### Installation
+- React + React Router (app + SSR build)
+- Vite
+- Firebase Authentication (admin sign-in only)
+- Cloud Firestore (artists and songs)
 
-Install the dependencies:
+## Project Structure
+
+- app/root.tsx: app shell (header/nav/footer) and error boundary
+- app/routes.ts: route table
+- app/routes/*: page routes (public + admin)
+- app/lib/firebase.client.ts: Firebase client initialization + auth helpers
+- app/lib/sawatunes-data.client.ts: Firestore reads/writes for artists/songs
+- firestore.rules: Firestore security rules
+- firestore.indexes.json: Firestore indexes used by the app
+
+## Prerequisites
+
+- Node.js (recent LTS recommended)
+- A Firebase project with:
+	- Authentication enabled (Email/Password)
+	- Firestore database created
+
+## Local Setup
+
+### 1) Install dependencies
 
 ```bash
 npm install
 ```
 
-### Development
+### 2) Configure Firebase environment variables
 
-Start the development server with HMR:
+Copy the example env file and fill in your Firebase config values.
+
+```bash
+cp .env.example .env
+```
+
+Required variables (see .env.example):
+
+- VITE_FIREBASE_API_KEY
+- VITE_FIREBASE_AUTH_DOMAIN
+- VITE_FIREBASE_PROJECT_ID
+- VITE_FIREBASE_STORAGE_BUCKET
+- VITE_FIREBASE_MESSAGING_SENDER_ID
+- VITE_FIREBASE_APP_ID
+
+Notes:
+
+- This app initializes Firebase only in the browser. Missing env vars will throw a runtime error when the client loads.
+
+### 3) Create an admin account (Firebase Auth)
+
+This app does not provide sign-up. Create admin users directly in Firebase Authentication using Email/Password. Any authenticated user is treated as an admin.
+
+### 4) Run the app
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Open the dev server URL shown in your terminal.
 
-## Building for Production
+## Scripts
 
-Create a production build:
+- Development: `npm run dev`
+- Typecheck: `npm run typecheck`
+- Production build: `npm run build`
+- Serve production build locally: `npm run start`
 
-```bash
-npm run build
-```
+## Firestore Data Model
 
-## Deployment
+Collections used:
 
-### Docker Deployment
+### artists
 
-To build and run using Docker:
+- name (string)
+- genre (string)
+- bio (string)
+- createdAt (timestamp)
 
-```bash
-docker build -t my-app .
+### songs
 
-# Run the container
-docker run -p 3000:3000 my-app
-```
+- title (string)
+- youtubeUrl (string)
+- genre (string)
+- artistId (string; references an artist document id)
+- likes (number)
+- views (number)
+- createdAt (timestamp)
 
-The containerized application can be deployed to any platform that supports Docker, including:
+The admin dashboard creates these documents. The public site reads them.
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
+## Firestore Rules and Indexes
 
-### DIY Deployment
+This repo includes:
 
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
+- firestore.rules
+- firestore.indexes.json
 
-Make sure to deploy the output of `npm run build`
+Rules summary:
 
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
+- Public reads are allowed for artists and songs
+- Authenticated users can create/update/delete artists
+- Authenticated users can create/delete songs
+- Unauthenticated users can only update songs by increasing `likes` and/or `views`
 
-## Styling
+Indexes:
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+- artists ordered by createdAt desc
+- songs ordered by createdAt desc
 
----
+To deploy rules/indexes, use the Firebase CLI in a Firebase-initialized project directory and deploy the two resources.
 
-Built with ❤️ using React Router.
+## Engagement Counters
+
+The UI increments engagement in Firestore, but also uses localStorage to avoid repeated increments from the same browser:
+
+- Likes key: `sawatunes-liked-songs` (array of song ids)
+- Views key: `sawatunes-viewed-songs` (array of song ids)
+
+If you clear site data, the browser will be able to like/view again.
+
+## Admin Routes
+
+- /admin/login: admin sign-in
+- /admin: admin dashboard (requires an authenticated admin)
+
+## Non-Goals
+
+- No public accounts, profiles, or playlists
+- No direct audio hosting (songs link out to YouTube)
+- No payment/donation processing
+
