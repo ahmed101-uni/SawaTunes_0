@@ -2,6 +2,12 @@
 
 SawaTunes is a small web app for discovering Sudanese music and artists. The public site is browse-only (no user accounts). A restricted admin area is used to curate artist profiles and song entries.
 
+## Live Demo
+[[Live Demo](https://sawatunes.netlify.app)]
+
+## Demo Video
+[[Demo Video](https://drive.google.com/file/d/1KuKTdKPaEXRY1107_9dPzZlhDa1vuNMS/view?usp=drivesdk)]
+
 ## Features
 
 - Public browsing of artists and songs
